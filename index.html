@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-[#f8f8fa] text-zinc-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRMesh.org // Open-Source Meshtastic Network (Lake Pend Oreille & Pend Oreille River)</title>
+    <meta name="description" content="Community-operated, license-free, off-grid Meshtastic radio mesh network serving the Lake Pend Oreille, Pend Oreille River, and surrounding North Idaho areas.">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Space Grotesk (Architectural display), Inter (Clean body), JetBrains Mono (Data/telemetry) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons CDN -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        canvas: '#f8f8fa',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Precision Swiss layout accents */
+        body {
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        }
+        
+        .swiss-card {
+            background-color: #ffffff;
+            border: 1px solid #e4e4e7;
+            border-radius: 0.5rem;
+            transition: border-color 0.15s ease;
+        }
+        .swiss-card:hover {
+            border-color: #d4d4d8;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .swiss-card {
+                border: 1px solid #cccccc !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="selection:bg-zinc-900 selection:text-white min-h-screen flex flex-col justify-between antialiased">
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" aria-live="polite" class="fixed bottom-6 right-6 z-50 transform translate-y-16 opacity-0 transition-all duration-200 pointer-events-none px-4 py-2.5 text-xs font-mono rounded-md border border-zinc-300 bg-white shadow-sm flex items-center gap-2.5 text-zinc-900">
+        <i class="ph ph-check text-emerald-600 font-bold text-sm"></i>
+        <span id="toast-msg">COPIED TO CLIPBOARD</span>
+    </div>
+
+    <!-- SYSTEM BAR -->
+    <aside aria-label="System status bar" class="border-b border-zinc-200 bg-white text-[11px] font-mono py-1.5 px-4 text-zinc-600">
+        <div class="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="font-semibold text-zinc-900">PRMESH.ORG</span>
+                <span class="text-zinc-300">/</span>
+                <span>OPEN-SOURCE <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-300 hover:text-zinc-950 transition">MESHTASTIC</a> NETWORK</span>
+            </div>
+            <div class="flex items-center gap-3 text-[10px] text-zinc-500">
+                <span>LORA 915 MHZ</span>
+                <span>•</span>
+                <span>OFF-GRID RESILIENCE</span>
+                <span>•</span>
+                <span>DISASTER RECOVERY</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- HEADER -->
+    <header class="border-b border-zinc-200 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <span class="font-display font-bold text-2xl tracking-tight text-zinc-950">
+                        PRMesh.org
+                    </span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border border-zinc-200 bg-zinc-100 text-zinc-700">
+                        Early Deployment Phase
+                    </span>
+                </div>
+                <p class="text-xs text-zinc-600 leading-tight">
+                    Community <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="font-medium underline decoration-zinc-300 hover:text-zinc-950 transition">Meshtastic®</a> Radio Network • Lake Pend Oreille, Pend Oreille River & Surrounding Valleys
+                </p>
+            </div>
+
+            <div class="no-print self-start sm:self-center">
+                <button type="button" onclick="window.print()" title="Print field documentation" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 transition">
+                    <i class="ph ph-printer text-sm"></i>
+                    <span>Print Spec</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Section Navigation -->
+        <nav aria-label="Section navigation" class="border-t border-zinc-100 px-4 sm:px-6 py-2.5 text-xs font-medium text-zinc-600 bg-zinc-50/50 overflow-x-auto">
+            <div class="max-w-4xl mx-auto flex items-center gap-5 sm:gap-7">
+                <a href="#overview" class="hover:text-zinc-950 transition whitespace-nowrap">01. Overview</a>
+                <span class="text-zinc-300">/</span>
+                <a href="#learn-meshtastic" class="hover:text-zinc-950 transition whitespace-nowrap">02. Learn Meshtastic</a>
+                <span class="text-zinc-300">/</span>
+                <a href="#coverage" class="hover:text-zinc-950 transition whitespace-nowrap">03. Coverage & Deployment</a>
+                <span class="text-zinc-300">/</span>
+                <a href="#config" class="hover:text-zinc-950 transition whitespace-nowrap">04. Radio Config</a>
+                <span class="text-zinc-300">/</span>
+                <a href="#contact" class="hover:text-zinc-950 transition whitespace-nowrap">05. Get Involved</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN BODY -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-12">
+
+        <!-- [01] OVERVIEW -->
+        <section id="overview" class="space-y-4 scroll-mt-20">
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-1.5 text-xs">
+                <span class="font-mono font-semibold text-zinc-900">// 01. OVERVIEW & PROTOCOL</span>
+                <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="font-mono text-zinc-500 hover:text-zinc-950 text-[11px] underline decoration-zinc-300">MESHTASTIC • LORA 915 MHZ</a>
+            </div>
+
+            <div class="swiss-card p-6 sm:p-8 space-y-6">
+                <div class="space-y-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase tracking-wider bg-zinc-100 text-zinc-800 border border-zinc-200">
+                        Autonomous Mesh Architecture
+                    </span>
+                    <h1 class="font-display text-xl sm:text-2xl font-bold text-zinc-950 leading-snug">
+                        Decentralized, open-source <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-300 hover:decoration-zinc-950 transition">Meshtastic</a> communications for the Pend Oreille basin.
+                    </h1>
+                </div>
+
+                <p class="text-sm text-zinc-700 leading-relaxed">
+                    <strong>PRMesh</strong> is an open-source, community-driven radio mesh network built exclusively on the <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="font-semibold text-zinc-950 underline decoration-zinc-300 hover:decoration-zinc-950 transition">Meshtastic®</a> protocol. Operating across the <strong>Lake Pend Oreille</strong> basin, the <strong>Pend Oreille River</strong> corridor, and adjacent mountain valleys, it provides reliable off-grid text messaging, location sharing, and emergency coordination without relying on commercial cellular towers, internet service providers, or municipal power grids.
+                </p>
+
+                <!-- 3 Pillars Grid -->
+                <div class="grid sm:grid-cols-3 gap-4 pt-2">
+                    <div class="p-4 rounded-md border border-zinc-200 bg-zinc-50/70 space-y-1.5">
+                        <div class="text-xs font-semibold text-zinc-900 flex items-center gap-1.5">
+                            <i class="ph ph-git-fork text-sm text-zinc-700"></i>
+                            <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="hover:underline">Meshtastic Standard</a>
+                        </div>
+                        <p class="text-xs text-zinc-600 leading-relaxed">
+                            100% compatible with official <a href="https://meshtastic.org/docs/software/" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-300 hover:text-zinc-950">Meshtastic software</a> and standard iOS and Android apps connected via Bluetooth.
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-md border border-zinc-200 bg-zinc-50/70 space-y-1.5">
+                        <div class="text-xs font-semibold text-zinc-900 flex items-center gap-1.5">
+                            <i class="ph ph-broadcast text-sm text-zinc-700"></i>
+                            <span>License-Free 915 MHz</span>
+                        </div>
+                        <p class="text-xs text-zinc-600 leading-relaxed">
+                            Operates under FCC Part 15 regulations in the 902–928 MHz ISM band. Anyone can participate freely without licensing exams.
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-md border border-zinc-200 bg-zinc-50/70 space-y-1.5">
+                        <div class="text-xs font-semibold text-zinc-900 flex items-center gap-1.5">
+                            <i class="ph ph-shield-check text-sm text-zinc-700"></i>
+                            <span>Disaster Resilience</span>
+                        </div>
+                        <p class="text-xs text-zinc-600 leading-relaxed">
+                            Engineered for emergency community messaging during severe winter storms, blizzards, sub-zero cold, and prolonged power outages.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-md border border-zinc-200 bg-zinc-50 text-xs text-zinc-700 leading-relaxed">
+                    <span class="font-semibold text-zinc-900">How <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-300 hover:text-zinc-950">Meshtastic</a> Works:</span> Every <a href="https://meshtastic.org/docs/hardware/devices/" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-300 hover:text-zinc-950">Meshtastic device</a> acts simultaneously as a private communicator and an autonomous relay node. Packets hop dynamically from radio to radio across valleys, lake surfaces, and ridges—creating a self-healing local infrastructure that grows stronger with every active node.
+                </div>
+            </div>
+        </section>
+
+
+        <!-- [02] DEDICATED MESHTASTIC LEARNING CALLOUT -->
+        <section id="learn-meshtastic" class="space-y-4 scroll-mt-20">
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-1.5 text-xs">
+                <span class="font-mono font-semibold text-zinc-900">// 02. LEARN ABOUT MESHTASTIC</span>
+                <span class="font-mono text-zinc-400 text-[11px]">OFFICIAL DOCUMENTATION</span>
+            </div>
+
+            <div class="swiss-card p-6 sm:p-7 space-y-5">
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-zinc-900 text-white">
+                            Official Guides
+                        </span>
+                        <h2 class="font-display text-base font-bold text-zinc-950">
+                            Learn How Meshtastic Works & Choose Your Hardware
+                        </h2>
+                    </div>
+                    <p class="text-sm text-zinc-700 leading-relaxed">
+                        If you want to learn more about <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="font-semibold text-zinc-950 underline decoration-zinc-300 hover:decoration-zinc-950 transition">Meshtastic</a>, how the protocol works, and supported devices, consult the official project documentation:
+                    </p>
+                </div>
+
+                <!-- Structured Link Matrix -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                    
+                    <!-- Link 1: Official Homepage -->
+                    <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="p-3.5 rounded-md border border-zinc-200 bg-zinc-50/60 hover:bg-zinc-50 hover:border-zinc-300 transition group flex flex-col justify-between gap-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-0.5">
+                                <span class="text-xs font-semibold text-zinc-900 group-hover:text-black">Official Homepage</span>
+                                <span class="text-[11px] font-mono text-zinc-500 block">meshtastic.org</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right text-zinc-400 group-hover:text-zinc-900 transition text-sm"></i>
+                        </div>
+                        <span class="text-[11px] text-zinc-500 leading-normal">Project overview, core mission, and community updates.</span>
+                    </a>
+
+                    <!-- Link 2: Getting Started Guide -->
+                    <a href="https://meshtastic.org/docs/getting-started/" target="_blank" rel="noopener noreferrer" class="p-3.5 rounded-md border border-zinc-200 bg-zinc-50/60 hover:bg-zinc-50 hover:border-zinc-300 transition group flex flex-col justify-between gap-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-0.5">
+                                <span class="text-xs font-semibold text-zinc-900 group-hover:text-black">Getting Started Guide</span>
+                                <span class="text-[11px] font-mono text-zinc-500 block">/docs/getting-started/</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right text-zinc-400 group-hover:text-zinc-900 transition text-sm"></i>
+                        </div>
+                        <span class="text-[11px] text-zinc-500 leading-normal">Step-by-step onboarding, initial flashing, and app pairing.</span>
+                    </a>
+
+                    <!-- Link 3: Supported Hardware & Devices -->
+                    <a href="https://meshtastic.org/docs/hardware/devices/" target="_blank" rel="noopener noreferrer" class="p-3.5 rounded-md border border-zinc-200 bg-zinc-50/60 hover:bg-zinc-50 hover:border-zinc-300 transition group flex flex-col justify-between gap-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-0.5">
+                                <span class="text-xs font-semibold text-zinc-900 group-hover:text-black">Supported Devices</span>
+                                <span class="text-[11px] font-mono text-zinc-500 block">/docs/hardware/devices/</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right text-zinc-400 group-hover:text-zinc-900 transition text-sm"></i>
+                        </div>
+                        <span class="text-[11px] text-zinc-500 leading-normal">WisBlock, Heltec, LilyGO T-Echo/T-Beam specifications.</span>
+                    </a>
+
+                    <!-- Link 4: Mesh Architecture & Routing -->
+                    <a href="https://meshtastic.org/docs/overview/mesh-algo/" target="_blank" rel="noopener noreferrer" class="p-3.5 rounded-md border border-zinc-200 bg-zinc-50/60 hover:bg-zinc-50 hover:border-zinc-300 transition group flex flex-col justify-between gap-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-0.5">
+                                <span class="text-xs font-semibold text-zinc-900 group-hover:text-black">Mesh Architecture</span>
+                                <span class="text-[11px] font-mono text-zinc-500 block">/overview/mesh-algo/</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right text-zinc-400 group-hover:text-zinc-900 transition text-sm"></i>
+                        </div>
+                        <span class="text-[11px] text-zinc-500 leading-normal">Deep dive into dynamic multi-hop routing algorithms.</span>
+                    </a>
+
+                    <!-- Link 5: Official Software & Client Apps -->
+                    <a href="https://meshtastic.org/docs/software/" target="_blank" rel="noopener noreferrer" class="p-3.5 rounded-md border border-zinc-200 bg-zinc-50/60 hover:bg-zinc-50 hover:border-zinc-300 transition group flex flex-col justify-between gap-2.5 sm:col-span-2 lg:col-span-2">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-0.5">
+                                <span class="text-xs font-semibold text-zinc-900 group-hover:text-black">Official Software & Client Apps</span>
+                                <span class="text-[11px] font-mono text-zinc-500 block">/docs/software/</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right text-zinc-400 group-hover:text-zinc-900 transition text-sm"></i>
+                        </div>
+                        <span class="text-[11px] text-zinc-500 leading-normal">Downloads for iOS, Android APK, Web Client, Web Flasher, and Python command-line tools.</span>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+
+        <!-- [03] COVERAGE & DEPLOYMENT -->
+        <section id="coverage" class="space-y-4 scroll-mt-20">
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-1.5 text-xs">
+                <span class="font-mono font-semibold text-zinc-900">// 03. COVERAGE & DEPLOYMENT</span>
+                <span class="font-mono text-zinc-400 text-[11px]">ACTIVE EXPANSION</span>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Status Notice Card -->
+                <div class="swiss-card p-6 sm:p-7 space-y-2">
+                    <h2 class="font-display text-sm font-bold uppercase tracking-tight text-zinc-950">
+                        Network Deployment Notice
+                    </h2>
+                    <p class="text-sm text-zinc-700 leading-relaxed">
+                        We are in the early stages of deploying <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-300 hover:text-zinc-950 font-medium transition">Meshtastic</a> nodes and repeater stations across the Lake Pend Oreille, Pend Oreille River, and surrounding mountain areas. We will publish a verified station list and coverage map once primary backbone links stabilize.
+                    </p>
+                </div>
+
+                <!-- Elevated Host Callout Box -->
+                <div class="p-6 sm:p-7 rounded-lg border border-zinc-300 bg-zinc-100/70 space-y-3.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-zinc-900 text-white">
+                            Station Hosting
+                        </span>
+                        <h3 class="font-display text-sm font-bold text-zinc-950">
+                            Interested in Hosting an Elevated <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-400 hover:text-zinc-950 transition">Meshtastic</a> Node?
+                        </h3>
+                    </div>
+
+                    <p class="text-sm text-zinc-700 leading-relaxed">
+                        If you have a property elevated enough and interested in hosting a node — please let us know. Elevated vantage points, ridge lines, and tall structures overlooking Lake Pend Oreille, the Pend Oreille River corridor, or adjacent mountain valleys help establish crucial line-of-sight relays for everyone across the region.
+                    </p>
+
+                    <div class="pt-1 flex flex-wrap items-center gap-3">
+                        <a href="mailto:info@prmesh.org?subject=Hosting%20a%20Meshtastic%20Node" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-mono font-semibold text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition">
+                            <i class="ph ph-envelope-simple font-bold"></i>
+                            <span>Contact Us: info@prmesh.org</span>
+                        </a>
+                        <button type="button" onclick="copyToClipboard('info@prmesh.org', 'Copied info@prmesh.org to clipboard')" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-mono font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 transition">
+                            <i class="ph ph-copy"></i>
+                            <span>Copy Email</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- [04] RADIO CONFIGURATION LEDGER -->
+        <section id="config" class="space-y-4 scroll-mt-20">
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-1.5 text-xs">
+                <span class="font-mono font-semibold text-zinc-900">// 04. <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="hover:underline">MESHTASTIC</a> CONFIGURATION</span>
+                <span class="font-mono text-zinc-400 text-[11px]">PRIMARY PUBLIC CHANNEL</span>
+            </div>
+
+            <div class="swiss-card overflow-hidden">
+                <!-- Ledger Header -->
+                <div class="p-5 border-b border-zinc-200 bg-zinc-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-display text-sm font-bold text-zinc-950">Primary Public Channel Parameters</h2>
+                        <p class="text-xs text-zinc-500">Standard settings for <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-300 hover:text-zinc-950 transition">Meshtastic</a> nodes across the Lake Pend Oreille and river corridor.</p>
+                    </div>
+                    <button type="button" onclick="copyAllConfig()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium text-zinc-800 bg-white border border-zinc-300 rounded-md hover:bg-zinc-50 transition self-start sm:self-auto">
+                        <i class="ph ph-clipboard-text"></i>
+                        <span>Copy All Values</span>
+                    </button>
+                </div>
+
+                <!-- Ledger Rows -->
+                <div class="divide-y divide-zinc-200 text-xs">
+                    
+                    <!-- Protocol -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition">
+                        <div class="sm:w-1/3">
+                            <span class="text-[10px] font-mono uppercase text-zinc-400 block font-semibold">Mesh Protocol</span>
+                            <span class="font-medium text-zinc-900">Radio Standard</span>
+                        </div>
+                        <div class="sm:w-1/2 flex items-center justify-between gap-2">
+                            <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="font-mono font-semibold text-zinc-900 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200 hover:bg-zinc-200 transition">Meshtastic LoRa</a>
+                            <button type="button" onclick="copyToClipboard('Meshtastic', 'Copied Protocol: Meshtastic')" title="Copy parameter" class="p-1 text-zinc-400 hover:text-zinc-900 transition">
+                                <i class="ph ph-copy text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Region -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition">
+                        <div class="sm:w-1/3">
+                            <span class="text-[10px] font-mono uppercase text-zinc-400 block font-semibold">LoRa Region</span>
+                            <span class="font-medium text-zinc-900">Frequency Band</span>
+                        </div>
+                        <div class="sm:w-1/2 flex items-center justify-between gap-2">
+                            <code class="font-mono font-semibold text-zinc-900 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200">US (915 MHz)</code>
+                            <button type="button" onclick="copyToClipboard('US', 'Copied Region: US (915 MHz)')" title="Copy parameter" class="p-1 text-zinc-400 hover:text-zinc-900 transition">
+                                <i class="ph ph-copy text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modem Preset -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition">
+                        <div class="sm:w-1/3">
+                            <span class="text-[10px] font-mono uppercase text-zinc-400 block font-semibold">Modem Preset</span>
+                            <span class="font-medium text-zinc-900">Speed & Range</span>
+                        </div>
+                        <div class="sm:w-1/2 flex items-center justify-between gap-2">
+                            <code class="font-mono font-semibold text-zinc-900 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200">LongFast (Default)</code>
+                            <button type="button" onclick="copyToClipboard('LongFast', 'Copied Modem Preset: LongFast')" title="Copy parameter" class="p-1 text-zinc-400 hover:text-zinc-900 transition">
+                                <i class="ph ph-copy text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Channel Name -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition">
+                        <div class="sm:w-1/3">
+                            <span class="text-[10px] font-mono uppercase text-zinc-400 block font-semibold">Channel 0 Name</span>
+                            <span class="font-medium text-zinc-900">Primary Public Channel</span>
+                        </div>
+                        <div class="sm:w-1/2 flex items-center justify-between gap-2">
+                            <code class="font-mono font-semibold text-zinc-900 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200">LongFast</code>
+                            <button type="button" onclick="copyToClipboard('LongFast', 'Copied Channel Name: LongFast')" title="Copy parameter" class="p-1 text-zinc-400 hover:text-zinc-900 transition">
+                                <i class="ph ph-copy text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PSK -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition">
+                        <div class="sm:w-1/3">
+                            <span class="text-[10px] font-mono uppercase text-zinc-400 block font-semibold">Pre-Shared Key (PSK)</span>
+                            <span class="font-medium text-zinc-900">Public Encryption Key</span>
+                        </div>
+                        <div class="sm:w-1/2 flex items-center justify-between gap-2">
+                            <code class="font-mono font-semibold text-zinc-900 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200">AQ== (Default Public Key)</code>
+                            <button type="button" onclick="copyToClipboard('AQ==', 'Copied PSK: AQ==')" title="Copy parameter" class="p-1 text-zinc-400 hover:text-zinc-900 transition">
+                                <i class="ph ph-copy text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Frequency Slot -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition">
+                        <div class="sm:w-1/3">
+                            <span class="text-[10px] font-mono uppercase text-zinc-400 block font-semibold">Frequency Slot</span>
+                            <span class="font-medium text-zinc-900">Center Frequency</span>
+                        </div>
+                        <div class="sm:w-1/2 flex items-center justify-between gap-2">
+                            <code class="font-mono font-semibold text-zinc-900 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200">Slot 20 (906.875 MHz)</code>
+                            <button type="button" onclick="copyToClipboard('906.875', 'Copied Frequency: 906.875 MHz (Slot 20)')" title="Copy parameter" class="p-1 text-zinc-400 hover:text-zinc-900 transition">
+                                <i class="ph ph-copy text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hop Limit -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition">
+                        <div class="sm:w-1/3">
+                            <span class="text-[10px] font-mono uppercase text-zinc-400 block font-semibold">Hop Limit</span>
+                            <span class="font-medium text-zinc-900">Maximum Mesh Hops</span>
+                        </div>
+                        <div class="sm:w-1/2 flex items-center justify-between gap-2">
+                            <code class="font-mono font-semibold text-zinc-900 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200">3 (Default)</code>
+                            <button type="button" onclick="copyToClipboard('3', 'Copied Hop Limit: 3')" title="Copy parameter" class="p-1 text-zinc-400 hover:text-zinc-900 transition">
+                                <i class="ph ph-copy text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Device Role -->
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition">
+                        <div class="sm:w-1/3">
+                            <span class="text-[10px] font-mono uppercase text-zinc-400 block font-semibold">Device Role</span>
+                            <span class="font-medium text-zinc-900">Operating Mode</span>
+                        </div>
+                        <div class="sm:w-1/2 flex items-center justify-between gap-2">
+                            <code class="font-mono font-semibold text-zinc-900 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200">CLIENT or CLIENT_MUTE</code>
+                            <span class="text-[10px] font-mono text-zinc-400 uppercase">[Standard]</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Config Note -->
+                <div class="p-4 border-t border-zinc-200 bg-zinc-50 text-xs text-zinc-600 leading-relaxed">
+                    <span class="font-semibold text-zinc-900">Airtime Hygiene Note:</span> Personal nodes should remain configured as <code class="px-1 py-0.5 rounded bg-white border border-zinc-200 font-mono text-zinc-800">CLIENT</code>. Dedicated repeater roles (<code class="px-1 py-0.5 rounded bg-white border border-zinc-200 font-mono text-zinc-800">ROUTER</code> / <code class="px-1 py-0.5 rounded bg-white border border-zinc-200 font-mono text-zinc-800">REPEATER</code>) are coordinated for high-altitude mountain solar sites to prevent channel saturation across the regional RF footprint.
+                </div>
+            </div>
+        </section>
+
+
+        <!-- [05] GET INVOLVED & CONTACT -->
+        <section id="contact" class="space-y-4 scroll-mt-20">
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-1.5 text-xs">
+                <span class="font-mono font-semibold text-zinc-900">// 05. GET INVOLVED & INQUIRIES</span>
+                <span class="font-mono text-zinc-400 text-[11px]">COMMUNITY CONTACT</span>
+            </div>
+
+            <div class="swiss-card p-6 sm:p-8 space-y-6">
+                <div class="space-y-1.5">
+                    <h2 class="font-display text-base sm:text-lg font-bold text-zinc-950">
+                        Connect with PRMesh
+                    </h2>
+                    <p class="text-sm text-zinc-600 leading-relaxed">
+                        PRMesh is an open, non-commercial community initiative. Whether you are setting up your first <a href="https://meshtastic.org/docs/getting-started/" target="_blank" rel="noopener noreferrer" class="underline decoration-zinc-300 hover:text-zinc-950 transition">Meshtastic node</a> in Priest River, Sandpoint, or surrounding valleys, testing coverage across Lake Pend Oreille or the Pend Oreille River, or interested in hosting an elevated station, get in touch:
+                    </p>
+                </div>
+
+                <!-- Direct Contact Card -->
+                <div class="p-5 rounded-lg border border-zinc-200 bg-zinc-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-md border border-zinc-200 bg-white flex items-center justify-center text-zinc-900 text-lg">
+                            <i class="ph ph-envelope-simple font-bold"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-mono uppercase font-semibold text-zinc-500 block">Community Inquiries</span>
+                            <a href="mailto:info@prmesh.org" class="font-mono font-bold text-sm sm:text-base text-zinc-950 hover:underline">
+                                info@prmesh.org
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <a href="mailto:info@prmesh.org" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-mono font-semibold text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition">
+                            <span>Send Email</span>
+                        </a>
+                        <button type="button" onclick="copyToClipboard('info@prmesh.org', 'Copied info@prmesh.org to clipboard')" class="p-2 text-xs font-mono text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 transition" title="Copy email address">
+                            <i class="ph ph-copy text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Resource Links -->
+                <div class="border-t border-zinc-200 pt-5 space-y-3">
+                    <span class="text-[11px] font-mono font-semibold uppercase text-zinc-400 block tracking-wider">
+                        External Tooling Links
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <a href="https://flasher.meshtastic.org" target="_blank" rel="noopener noreferrer" class="p-3 rounded-md border border-zinc-200 bg-white hover:border-zinc-300 transition flex items-center justify-between group">
+                            <div>
+                                <span class="font-semibold text-zinc-900 block">Official Web Flasher</span>
+                                <span class="text-zinc-500 font-mono text-[11px]">flasher.meshtastic.org</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right text-zinc-400 group-hover:text-zinc-900 transition"></i>
+                        </a>
+
+                        <a href="https://client.meshtastic.org" target="_blank" rel="noopener noreferrer" class="p-3 rounded-md border border-zinc-200 bg-white hover:border-zinc-300 transition flex items-center justify-between group">
+                            <div>
+                                <span class="font-semibold text-zinc-900 block">Official Web Client</span>
+                                <span class="text-zinc-500 font-mono text-[11px]">client.meshtastic.org</span>
+                            </div>
+                            <i class="ph ph-arrow-up-right text-zinc-400 group-hover:text-zinc-900 transition"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-zinc-200 bg-white py-8 px-4 sm:px-6 mt-16 text-xs text-zinc-600">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+                <p class="font-mono font-bold text-zinc-900">
+                    PRMESH.ORG // Community Meshtastic Network
+                </p>
+                <p class="text-[11px] text-zinc-500">
+                    Lake Pend Oreille • Pend Oreille River • Surrounding Valleys • Idaho, USA
+                </p>
+            </div>
+
+            <div class="text-left sm:text-right text-[11px] text-zinc-500 space-y-0.5">
+                <p>Built with open-source <a href="https://meshtastic.org" target="_blank" rel="noopener noreferrer" class="underline hover:text-zinc-900 transition">Meshtastic®</a> software.</p>
+                <p>FCC Part 15 Unlicensed (915 MHz) • Public Community Resource</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CLIPBOARD INTERACTION SCRIPT -->
+    <script>
+        // Fallback clipboard copying method safe for iframe embedding
+        function copyToClipboard(text, successMessage) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            tempInput.setAttribute('readonly', '');
+            tempInput.style.position = 'absolute';
+            tempInput.style.left = '-9999px';
+            document.body.appendChild(tempInput);
+            tempInput.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast(successMessage || `COPIED: "${text}"`);
+                } else {
+                    showToast("COULD NOT COPY AUTOMATICALLY");
+                }
+            } catch (err) {
+                showToast("CLIPBOARD ACCESS FAILED");
+            }
+
+            document.body.removeChild(tempInput);
+        }
+
+        // Copy entire Meshtastic Channel 0 specification block
+        function copyAllConfig() {
+            const configText = [
+                "PRMesh.org - Meshtastic Channel 0 Parameters",
+                "Mesh Protocol: Meshtastic LoRa (https://meshtastic.org)",
+                "Region: US (915 MHz)",
+                "Modem Preset: LongFast",
+                "Primary Channel: LongFast",
+                "Public PSK: AQ==",
+                "Frequency Slot: Slot 20 (906.875 MHz)",
+                "Hop Limit: 3",
+                "Device Role: CLIENT or CLIENT_MUTE"
+            ].join("\n");
+
+            copyToClipboard(configText, "COPIED ALL MESHTASTIC PARAMETERS");
+        }
+
+        // Clean status toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msgSpan = document.getElementById('toast-msg');
+            if (!toast || !msgSpan) return;
+
+            msgSpan.textContent = message;
+            toast.classList.remove('translate-y-16', 'opacity-0');
+
+            clearTimeout(window.__toastTimeout);
+            window.__toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-16', 'opacity-0');
+            }, 2200);
+        }
+    </script>
+
+</body>
+</html>
